@@ -51,7 +51,7 @@
 
 //打乱数组顺序
 - (void)arrayRandom:(NSMutableArray *)array{
-    NSUInteger count = array.count - 1;
+    NSInteger count = array.count - 1;
     int index;
     id tmp;
     

@@ -16,6 +16,14 @@
     UILabel *top;
     UILabel *left;
     UILabel *roomNumLabel;
+    UILabel *lastCountLabel;    //剩余牌量
+    
+    NSUserDefaults *userDefaults;
+    int myCount;
+    
+    NSMutableArray *shouPai;
+    
+    UIView *spView15; //15张牌view   未吃未碰未杠
 }
 
 @end
@@ -52,6 +60,15 @@
     //创建麻将功能类
     _mjManager = [[MJManager alloc] init];
     
+    //存储对象
+    userDefaults = [NSUserDefaults standardUserDefaults];
+    
+    //初始化手牌
+    shouPai = [[NSMutableArray alloc] init];
+    
+    //初始化手牌view
+    [self initShouPaiView];
+    
     bottom = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100, 50)];
     [bottom setCenter:CGPointMake(self.view.frame.size.width / 2, self.view.frame.size.height - 50)];
     [bottom setText:@"aaaa"];
@@ -66,6 +83,10 @@
     left = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100, 50)];
     [left setCenter:CGPointMake(100, self.view.frame.size.height / 2)];
     
+    //剩余牌量
+    lastCountLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100, 50)];
+    [lastCountLabel setCenter:CGPointMake(self.view.frame.size.width / 2, self.view.frame.size.height / 2)];
+    roomNumLabel.textColor = [UIColor blackColor];
     // Do any additional setup after loading the view.
 }
 
@@ -131,6 +152,7 @@
     int count = 0;
     for (Player *player in _playerArr) {
         if ([player.clientId isEqualToString:_user.clientId]) {
+            myCount = count;    //我是第几个玩家
             for (int i = 0; i < 4; i ++) {
                 Player *temp = _playerArr[count];
                 switch (i) {
@@ -195,6 +217,67 @@
     }];
 }
 
+/**
+ *展示手牌
+ */
+- (void) showShouPaiView {
+    lastCountLabel.text = [NSString stringWithFormat:@"剩余%d张",_thisGame.lastCount];
+    [self.view addSubview:lastCountLabel];
+    
+    //当前13张
+    if (shouPai.count == 13) {
+        int count = 0;
+        NSArray *arr = [spView15 subviews];
+        for (UIButton *btn in arr) {
+            //设置牌面
+            [btn setTitle:shouPai[count] forState:UIControlStateNormal];
+            count ++;
+            
+            if (count == 13) {
+                break;
+            }
+        }
+        
+        [self.view addSubview:spView15];    //使用15张牌模型
+    }
+    
+    
+    //当前14张
+    if (shouPai.count == 14) {
+        int count = 0;
+        NSArray *arr = [spView15 subviews];
+        for (UIButton *btn in arr) {
+            //设置牌面
+            if (count == 13) {
+                count --;
+                continue;
+            }
+            [btn setTitle:shouPai[count] forState:UIControlStateNormal];
+            count ++;
+            
+            if (count == 14) {
+                break;
+            }
+        }
+        
+        [self.view addSubview:spView15];    //使用15张牌模型
+    }
+}
+
+/**
+ *初始化各种手牌模型View
+ */
+- (void) initShouPaiView {
+    spView15 = [[UIView alloc] initWithFrame:CGRectMake(10, self.view.frame.size.height - 100, self.view.frame.size.width - 20, 20)];
+    for (int i = 0; i < 15; i ++) {
+        UIButton *btn = [UIButton buttonWithType:UIButtonTypeCustom];
+        [btn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        [btn setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+        btn.frame = CGRectMake(i * spView15.frame.size.width / 15, 0, spView15.frame.size.width / 15, spView15.frame.size.height);
+        [spView15 addSubview:btn];
+    }
+}
+
 /*!
  对话中有新成员加入的通知。
  @param conversation － 所属对话
@@ -203,6 +286,8 @@
  @return None.
  */
 -(void)conversation:(AVIMConversation *)conversation membersAdded:(NSArray *)clientIds byClientId:(NSString *)clientId {
+    NSLog(@"玩家进入:%@",clientIds);
+    
     for (NSString *clientId in clientIds) {
         if ([clientId isEqualToString:_user.clientId]) {
             continue;
@@ -213,6 +298,35 @@
     }
     
     [self setPlayers];  //重新设置名字
+    
+    //玩家已达到4个，开始游戏
+    if (myCount == 3) {
+        [self startGames];
+    }
+}
+
+/*
+ *开始一局新的游戏
+ */
+- (void) startGames {
+    //当局游戏
+    _thisGame = [[THISGame alloc] initWithRoomNum:roomNumLabel.text];
+    //获取手牌
+    shouPai = [_thisGame getShouPai:myCount];
+    
+    //如果是庄，抓牌
+    if (myCount == 3) {
+        //发送消息：抓牌
+        [self sendMessageWithConversion:_conversation message:[NSString stringWithFormat:@"1:%d",myCount]];
+
+        //抓一张牌
+        [shouPai addObject:[_thisGame getOneCard]];
+        
+        //展现手牌
+        [self showShouPaiView];
+    } else {
+        [self showShouPaiView];
+    }
 }
 
 /*!
@@ -238,8 +352,13 @@
     [self setPlayers];  //重新设置名字
 }
 
-//接受消息消息
+
+/**
+ *接收消息，消息类型:
+ *1:count 抓牌:抓牌者在玩家数组的索引
+ */
 - (void) conversation:(AVIMConversation *)conversation didReceiveTypedMessage:(AVIMTypedMessage *)message {
+    //此处应解析消息
     NSLog(@"%@",message.text);
 }
 

@@ -17,6 +17,7 @@
     player.name = clientId;
     return player;
 }
+
 -(Player *) initWithName:(NSString *) name {
     Player *player = [[Player alloc] init];
     [player setName:name];

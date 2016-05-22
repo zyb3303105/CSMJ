@@ -87,10 +87,12 @@
                 [_table getPlayers];    //先在此将已有的玩家加入进牌桌数组
                 
                 //查询房间人数
+                
                 [_table.conversation countMembersWithCallback:^(NSInteger number, NSError *error) {
                     if (number < 4) {
                         [_table.conversation joinWithCallback:^(BOOL succeeded, NSError *error) {
                             if (succeeded) {
+                                
                                 NSLog(@"加入成功!");
 
                                 //跳转画面到牌桌
@@ -99,6 +101,10 @@
                                 }];
                                 [_table setRoomNum:_roomNumInput.text];//显示房间号
                                 [_table showPlayers];   //显示玩家
+//                                //玩家已满 开始游戏
+//                                if (number == 3) {
+//                                    [_table startGames];
+//                                }
                             }
                         }];
                     }else {
@@ -113,6 +119,7 @@
                                 }];
                                 [_table showPlayers];   //显示玩家
                                 [_table setRoomNum:_roomNumInput.text];//显示房间号
+                                [_table startGames]; //开始游戏
                                 bExist = YES;
                             }
                         }

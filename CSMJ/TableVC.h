@@ -11,15 +11,18 @@
 #import <AVOSCloudIM/AVOSCloudIM.h>
 #import <AVOSCloud/AVOSCloud.h>
 #import "Player.h"
+#import "THISGame.h"
 
 @interface TableVC : UIViewController <AVIMClientDelegate>  //成员变更接口协议
 @property NSMutableArray *playerArr;
 @property AVIMConversation *conversation;   //当前群聊
 @property Player *user; //当前玩家
 @property MJManager *mjManager; //麻将功能类
+@property THISGame *thisGame;   //当局游戏
 
 - (void) getPlayers;
 - (void) showPlayers;
 - (void) setRoomNum:(NSString *) roomNum;
 - (void) createPaiKu:(NSInteger ) num roomNum:(NSNumber *) roomNum;
+- (void) startGames;
 @end
