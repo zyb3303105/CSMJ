@@ -18,12 +18,20 @@
     UILabel *roomNumLabel;
     UILabel *lastCountLabel;    //剩余牌量
     
-    NSUserDefaults *userDefaults;
-    int myCount;
+    UIButton *huBtn;    //胡牌按钮
+    UIButton *pengBtn;  //碰牌按钮
+    UIButton *gangBtn;  //杠拍按钮
+    UIButton *chiBtn;   //吃牌按钮
+    UIButton *guoBtn;   //过牌按钮
     
-    NSMutableArray *shouPai;
+    NSUserDefaults *userDefaults;
+    int myCount;    //用于保存自己在牌桌的第几位
+    
+    NSMutableArray *shouPai;    //当前手牌
+    NSMutableArray *shouPaiTmp;    //其他玩家打牌时，用于临时存储，检测是否胡牌
     
     UIView *spView15; //15张牌view   未吃未碰未杠
+    
 }
 
 @end
@@ -65,13 +73,17 @@
     
     //初始化手牌
     shouPai = [[NSMutableArray alloc] init];
+    shouPaiTmp = [[NSMutableArray alloc] init];
     
     //初始化手牌view
     [self initShouPaiView];
     
+    //初始化功能按钮
+    [self initFunctionBtn];
+    
+    //初始化玩家头像
     bottom = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100, 50)];
     [bottom setCenter:CGPointMake(self.view.frame.size.width / 2, self.view.frame.size.height - 50)];
-    [bottom setText:@"aaaa"];
     [bottom setTextColor:[UIColor blackColor]];
     
     right= [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100, 50)];
@@ -102,6 +114,8 @@
             if (succeeded) {
                 NSLog(@"退出房间成功！");
                 [_playerArr removeAllObjects];
+                [spView15 removeFromSuperview];
+                [lastCountLabel removeFromSuperview];
                 _conversation = nil;
             }
         }];
@@ -190,9 +204,10 @@
 }
 
 - (void) sendMessageWithConversion:(AVIMConversation *) conversion message:(NSString *) message {
-    [conversion sendMessage:[AVIMTextMessage messageWithText:message attributes:nil] callback:^(BOOL succeeded, NSError *error) {
+    
+    [conversion sendMessage:[AVIMMessage messageWithContent:message]  callback:^(BOOL succeeded, NSError *error) {
         if (succeeded) {
-            NSLog(@"消息发送成功！！");
+            NSLog(@"发送消息:%@",message);
         }
     }];
 }
@@ -229,13 +244,16 @@
         int count = 0;
         NSArray *arr = [spView15 subviews];
         for (UIButton *btn in arr) {
-            //设置牌面
-            [btn setTitle:shouPai[count] forState:UIControlStateNormal];
-            count ++;
-            
-            if (count == 13) {
-                break;
+            if (count < 13) {
+                //设置牌面
+                [btn setTitle:shouPai[count] forState:UIControlStateNormal];
+                count ++;
+            }else {
+                [btn setTitle:@"" forState:UIControlStateNormal];
             }
+            
+            //手牌只有13张时，按钮不可用
+            [btn setEnabled:NO];
         }
         
         [self.view addSubview:spView15];    //使用15张牌模型
@@ -247,16 +265,20 @@
         int count = 0;
         NSArray *arr = [spView15 subviews];
         for (UIButton *btn in arr) {
-            //设置牌面
-            if (count == 13) {
-                count --;
-                continue;
-            }
-            [btn setTitle:shouPai[count] forState:UIControlStateNormal];
-            count ++;
-            
-            if (count == 14) {
-                break;
+            if (count < 14) {
+                //设置牌面
+                if (count == 13) {
+                    //跳过一个按钮
+                    [btn setEnabled:NO];
+                    count++;
+                    continue;
+                }
+                [btn setTitle:shouPai[count] forState:UIControlStateNormal];
+                count ++;
+            } else {
+                //按钮不可用
+                [btn setEnabled:NO];
+                [btn setTitle:shouPai[13] forState:UIControlStateNormal];
             }
         }
         
@@ -274,7 +296,124 @@
         [btn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         [btn setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
         btn.frame = CGRectMake(i * spView15.frame.size.width / 15, 0, spView15.frame.size.width / 15, spView15.frame.size.height);
+        [btn addTarget:self action:@selector(putOneCard:) forControlEvents:UIControlEventTouchUpInside];
         [spView15 addSubview:btn];
+    }
+}
+
+/**
+ *初始化功能按钮
+ */
+- (void) initFunctionBtn {
+    //胡牌按钮
+    huBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    huBtn.frame = CGRectMake(50, self.view.frame.size.height - 120, 20, 20);
+    [huBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [huBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+    [huBtn setTitle:@"胡" forState:UIControlStateNormal];
+    [huBtn setHidden:YES];  //隐藏
+    [huBtn addTarget:self action:@selector(huPai) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:huBtn];
+    
+    //碰牌按钮
+    pengBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    pengBtn.frame = CGRectMake(150, self.view.frame.size.height - 120, 20, 20);
+    [pengBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [pengBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+    [pengBtn setTitle:@"碰" forState:UIControlStateNormal];
+    [pengBtn setHidden:YES];  //隐藏
+    [pengBtn addTarget:self action:@selector(pengPai) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:pengBtn];
+    
+    //杠牌按钮
+    gangBtn= [UIButton buttonWithType:UIButtonTypeCustom];
+    gangBtn.frame = CGRectMake(250, self.view.frame.size.height - 120, 20, 20);
+    [gangBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [gangBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+    [gangBtn setTitle:@"杠" forState:UIControlStateNormal];
+    [gangBtn setHidden:YES];  //隐藏
+    [gangBtn addTarget:self action:@selector(gangPai) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:gangBtn];
+    
+    //吃牌按钮
+    chiBtn= [UIButton buttonWithType:UIButtonTypeCustom];
+    chiBtn.frame = CGRectMake(350, self.view.frame.size.height - 120, 20, 20);
+    [chiBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [chiBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+    [chiBtn setTitle:@"吃" forState:UIControlStateNormal];
+    [chiBtn setHidden:YES];  //隐藏
+    [chiBtn addTarget:self action:@selector(chiPai) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:chiBtn];
+    
+    //过牌按钮
+    guoBtn= [UIButton buttonWithType:UIButtonTypeCustom];
+    guoBtn.frame = CGRectMake(450, self.view.frame.size.height - 120, 20, 20);
+    [guoBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [guoBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+    [guoBtn setTitle:@"过" forState:UIControlStateNormal];
+    [guoBtn setHidden:YES];  //隐藏
+    [guoBtn addTarget:self action:@selector(guoPai) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:guoBtn];
+}
+
+/**
+ *胡牌
+ */
+- (void) huPai {
+    
+}
+
+/**
+ *碰牌
+ */
+- (void) pengPai {
+    
+}
+
+/**
+ *杠牌
+ */
+- (void) gangPai {
+    
+}
+
+/**
+ *吃牌
+ */
+- (void) chiPai {
+    
+}
+
+/**
+ *过牌
+ */
+- (void) guoPai {
+    
+}
+
+/*
+*开始一局新的游戏
+*/
+- (void) startGames {
+    //当局游戏
+    _thisGame = [[THISGame alloc] initWithRoomNum:roomNumLabel.text];
+    //获取手牌
+    shouPai = [_thisGame getShouPai:myCount];
+    
+    //手牌排序
+    shouPai = [[NSMutableArray alloc] initWithArray:[shouPai sortedArrayUsingSelector:@selector(compare:)]];
+    
+    //如果是庄，抓牌
+    if (myCount == 3) {
+        //发送消息：抓牌
+        [self sendMessageWithConversion:_conversation message:[NSString stringWithFormat:@"1:%d",myCount]];
+        //抓一张牌
+        [shouPai addObject:[_thisGame getOneCard]];
+        
+        //展现手牌
+        [self showShouPaiView];
+    } else {
+        [self showShouPaiView];
     }
 }
 
@@ -300,33 +439,86 @@
     [self setPlayers];  //重新设置名字
     
     //玩家已达到4个，开始游戏
-    if (myCount == 3) {
+    Player *player = _playerArr[3];
+    NSLog(@"%@",player.clientId);
+    if (player.clientId != nil) {
         [self startGames];
     }
 }
 
-/*
- *开始一局新的游戏
+/**
+ *其他玩家抓了一张牌的动作
+ *@param-count:玩家编号
  */
-- (void) startGames {
-    //当局游戏
-    _thisGame = [[THISGame alloc] initWithRoomNum:roomNumLabel.text];
-    //获取手牌
-    shouPai = [_thisGame getShouPai:myCount];
-    
-    //如果是庄，抓牌
-    if (myCount == 3) {
-        //发送消息：抓牌
-        [self sendMessageWithConversion:_conversation message:[NSString stringWithFormat:@"1:%d",myCount]];
+- (void) othersGetOneCard:(int ) count {
+    NSLog(@"玩家:%d抓了一张牌",count);
+    _thisGame.lastCount--;
+    lastCountLabel.text = [NSString stringWithFormat:@"剩余%d张", _thisGame.lastCount];
+}
 
-        //抓一张牌
-        [shouPai addObject:[_thisGame getOneCard]];
-        
-        //展现手牌
-        [self showShouPaiView];
-    } else {
-        [self showShouPaiView];
+/**
+ *其他玩家打了一张牌的动作
+ */
+- (void) othersPutOneCard:(int) count card:(NSString *)card {
+    NSLog(@"玩家%d打了一张牌:%@",count,card);
+    
+    //检验胡牌、碰牌/杠牌、吃牌
+    //检测胡牌
+    [shouPaiTmp removeAllObjects];
+    [shouPaiTmp addObjectsFromArray:shouPai];
+    [shouPaiTmp addObject:card];
+    
+    //检测是否可胡牌
+    if ([_mjManager checkAllPai:shouPaiTmp]) {
+        NSLog(@"可胡牌！");
+        [huBtn setHidden:NO];
+    };
+    
+    //检测是否可碰牌
+    if ([_mjManager checkPengPai:shouPai card:[card intValue]]) {
+        NSLog(@"可碰牌！");
+        [pengBtn setHidden:NO];
     }
+    
+    //检测是否可杠牌
+    if ([_mjManager checkGangPai:shouPaiTmp card:[card intValue]]) {
+        NSLog(@"可杠牌！");
+        [gangBtn setHidden:NO];
+    }
+    
+    //检测是否可吃牌
+    if (shouPai.count > 2) {
+        NSMutableArray *arr = [_mjManager checkChiPai:shouPai card:[card intValue]];
+        NSLog(@"可吃牌:%@",arr);
+        [chiBtn setHidden:NO];
+    }
+    
+}
+
+/**
+ *打一张牌
+ */
+- (void) putOneCard:(id) sender {
+    UIButton *btn = sender;
+    NSString *str = [btn titleForState:UIControlStateNormal];
+    NSLog(@"出牌：%@",str);
+    _thisGame.lastCount --;     //牌库-1
+    
+    //出掉手牌
+    int count = 0;
+    for (NSString *strTmp in shouPai) {
+        if ([strTmp isEqualToString:str]) {
+            [shouPai removeObjectAtIndex:count];
+            NSLog(@"当前手牌:%@",shouPai);
+            break;
+        }
+        count ++;
+    }
+    
+    [self showShouPaiView];
+    
+    //发送出牌消息
+    [self sendMessageWithConversion:_conversation message:[NSString stringWithFormat:@"2:%d:%d",myCount,[str intValue]]];
 }
 
 /*!
@@ -357,9 +549,21 @@
  *接收消息，消息类型:
  *1:count 抓牌:抓牌者在玩家数组的索引
  */
-- (void) conversation:(AVIMConversation *)conversation didReceiveTypedMessage:(AVIMTypedMessage *)message {
-    //此处应解析消息
-    NSLog(@"%@",message.text);
+- (void) conversation:(AVIMConversation *)conversation didReceiveCommonMessage:(AVIMMessage *)message {
+    NSLog(@"收到消息：%@",message.content);
+    NSArray<NSString *> *msg = [message.content componentsSeparatedByString:@":"];
+    
+    switch ([msg[0] intValue]) {
+        case 1: //其他玩家抓牌
+            [self othersGetOneCard:[msg[1] intValue]];
+            break;
+        case 2: //其他玩家打牌
+            [self othersPutOneCard:[msg[1] intValue] card:msg[2]];
+            break;
+            
+        default:
+            break;
+    }
 }
 
 /*
