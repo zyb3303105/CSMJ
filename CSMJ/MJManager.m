@@ -410,11 +410,20 @@
  *检测是否可吃牌
  *@param-in:arr 手牌数组
  *@param-in:card 被检测牌
- *@param-out:可用于吃牌的组合
+ *@param-in:otherCount 打牌者的索引
+ *@param-in:myCount 我自己的索引
+ *@param-out:result 可用于吃牌的组合
  */
-- (NSMutableArray *) checkChiPai: (NSMutableArray *) arr card:(int ) card {
+- (NSMutableArray *) checkChiPai: (NSMutableArray *) arr card:(int ) card otherCount:(int )count myCount:(int )myCount {
+    NSMutableArray *result = [[NSMutableArray alloc] init];
     //假设吃3
     //可12吃、24吃、45吃
+    if (myCount != count+1 ) {  //我不是出牌者的下家
+        if (!(myCount == 0 && count == 3)) {
+            return result;
+        }
+    }
+    
     int value1 = card - 2,value2 = card - 1,value3 = card + 1,value4 = card + 2;
     BOOL exist1 = NO,exist2 = NO,exist3 = NO,exist4 = NO;
     
@@ -436,7 +445,7 @@
         }
     }
     
-    NSMutableArray *result = [[NSMutableArray alloc] init];
+    
     
     //12吃
     if (exist1 && exist2) {

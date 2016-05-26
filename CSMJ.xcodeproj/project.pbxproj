@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		70040C101CF5B78500AC76A2 /* ACTIONManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 70040C0F1CF5B78500AC76A2 /* ACTIONManager.m */; };
 		707C35491CEB51BD00B6774D /* MJManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 707C35481CEB51BD00B6774D /* MJManager.m */; };
 		707C354F1CEB5F0300B6774D /* THISGame.m in Sources */ = {isa = PBXBuildFile; fileRef = 707C354E1CEB5F0300B6774D /* THISGame.m */; };
 		70F53A881CE092060039424F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 70F53A871CE092060039424F /* main.m */; };
@@ -45,10 +46,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		70040C0E1CF5B78500AC76A2 /* ACTIONManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACTIONManager.h; sourceTree = "<group>"; };
+		70040C0F1CF5B78500AC76A2 /* ACTIONManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACTIONManager.m; sourceTree = "<group>"; };
 		707C35471CEB51BD00B6774D /* MJManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MJManager.h; sourceTree = "<group>"; };
 		707C35481CEB51BD00B6774D /* MJManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MJManager.m; sourceTree = "<group>"; };
 		707C354D1CEB5F0300B6774D /* THISGame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = THISGame.h; sourceTree = "<group>"; };
 		707C354E1CEB5F0300B6774D /* THISGame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = THISGame.m; sourceTree = "<group>"; };
+		70CE63BC1CF5EA6100F995E6 /* ProtocolFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProtocolFile.h; sourceTree = "<group>"; };
 		70F53A831CE092060039424F /* CSMJ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CSMJ.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		70F53A871CE092060039424F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		70F53A891CE092060039424F /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -142,8 +146,11 @@
 				70F53ACD1CE366C00039424F /* Player.m */,
 				707C35471CEB51BD00B6774D /* MJManager.h */,
 				707C35481CEB51BD00B6774D /* MJManager.m */,
+				70040C0E1CF5B78500AC76A2 /* ACTIONManager.h */,
+				70040C0F1CF5B78500AC76A2 /* ACTIONManager.m */,
 				707C354D1CEB5F0300B6774D /* THISGame.h */,
 				707C354E1CEB5F0300B6774D /* THISGame.m */,
+				70CE63BC1CF5EA6100F995E6 /* ProtocolFile.h */,
 				70F53A8F1CE092060039424F /* Main.storyboard */,
 				70F53A921CE092060039424F /* Assets.xcassets */,
 				70F53A941CE092060039424F /* LaunchScreen.storyboard */,
@@ -328,6 +335,7 @@
 				70F53ACB1CE35A970039424F /* TableVC.m in Sources */,
 				70F53A8E1CE092060039424F /* ViewController.m in Sources */,
 				70F53A8B1CE092060039424F /* AppDelegate.m in Sources */,
+				70040C101CF5B78500AC76A2 /* ACTIONManager.m in Sources */,
 				70F53A881CE092060039424F /* main.m in Sources */,
 				70F53ACE1CE366C00039424F /* Player.m in Sources */,
 				707C354F1CEB5F0300B6774D /* THISGame.m in Sources */,
@@ -478,7 +486,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = CSMJ/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				"OTHER_LDFLAGS[arch=*]" = (
 					"-licucore",
@@ -502,7 +510,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = CSMJ/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				"OTHER_LDFLAGS[arch=*]" = (
 					"-lz",

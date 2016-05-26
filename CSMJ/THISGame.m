@@ -54,7 +54,6 @@
         [shouPai addObject:self.paiQiang[i]];
     }
     
-    NSLog(@"当前手牌:%@",shouPai);
     return shouPai;
 }
 

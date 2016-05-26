@@ -73,7 +73,7 @@
 //加入房间
 - (IBAction)JoinRoom:(id)sender {
     NSLog(@"%@",_clientIdInput.text);
-    
+
     [_user.client openWithCallback:^(BOOL succeeded, NSError *error) {
         NSLog(@"打开Client成功");
         AVIMConversationQuery *query = [_user.client conversationQuery];
@@ -94,17 +94,17 @@
                             if (succeeded) {
                                 
                                 NSLog(@"加入成功!");
-
+                                
                                 //跳转画面到牌桌
                                 [self presentViewController:_table animated:YES completion:^{
                                     NSLog(@"进入牌桌");
                                 }];
                                 [_table setRoomNum:_roomNumInput.text];//显示房间号
                                 [_table showPlayers];   //显示玩家
-//                                //玩家已满 开始游戏
-//                                if (number == 3) {
-//                                    [_table startGames];
-//                                }
+                                //                                //玩家已满 开始游戏
+                                //                                if (number == 3) {
+                                //                                    [_table startGames];
+                                //                                }
                             }
                         }];
                     }else {

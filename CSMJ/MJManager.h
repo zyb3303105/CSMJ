@@ -21,7 +21,7 @@
 - (BOOL) checkGangPai: (NSMutableArray *) arr card:(int ) card;
 
 //检测是否可吃牌
-- (NSMutableArray *) checkChiPai: (NSMutableArray *) arr card:(int ) card;
+- (NSMutableArray *) checkChiPai: (NSMutableArray *) arr card:(int ) card otherCount:(int )count myCount:(int )myCount;
 
 //检测是否胡牌 (5张）
 - (BOOL) check5Pai:(int) value1 value2:(int) value2 value3:(int) value3 value4:(int) value4 value5:(int) value5;
